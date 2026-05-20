@@ -3,40 +3,43 @@ const fs = require('fs');
 const path = require('path');
 
 const server = http.createServer((req, res) => {
-    console.log('Petición recibida para:', req.url);
 
-    let filePath = '.' + req.url;
+    let filePath = path.join(
+        __dirname,
+        'public',
+        req.url === '/' ? 'index.html' : req.url
+    );
 
-    // Si la ruta está vacía, servir index.html
-    if (filePath === './') {
-        filePath = './index.html';
-    }
-
-    const extname = path.extname(filePath).toLowerCase();
+    const extname = path.extname(filePath);
 
     const mimeTypes = {
         '.html': 'text/html',
-        '.js': 'application/javascript',
-        '.css': 'text/css'
+        '.css': 'text/css',
+        '.js': 'application/javascript'
     };
 
     const contentType =
         mimeTypes[extname] || 'application/octet-stream';
 
-    fs.readFile(filePath, (error, content) => {
-        if (error) {
+    fs.readFile(filePath, (err, content) => {
+
+        if (err) {
+            console.log(err);
+
             res.writeHead(404);
             res.end('Error 404: No encontrado');
-        } else {
-            res.writeHead(200, {
-                'Content-Type': contentType
-            });
-
-            res.end(content, 'utf-8');
+            return;
         }
+
+        res.writeHead(200, {
+            'Content-Type': contentType
+        });
+
+        res.end(content);
     });
+
 });
 
 server.listen(3000, () => {
-    console.log('Servidor corriendo en http://localhost:3000');
+    console.log('Servidor corriendo en puerto 3000');
 });
